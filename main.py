@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import serial.tools.list_ports
-
+# 主应用程序类
 class SerialApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("脑波数据接收器和可视化工具")
+        self.root.title("EEG接收器和可视化工具V1.0")
         self.serial_port = None
         self.baud_rate = 9600
         self.is_serial_open = False
@@ -24,7 +24,7 @@ class SerialApp:
 
         # 使用 deque 来存储数据，限制最大长度
         self.max_data_points = 1000
-        self.raw_data = deque(maxlen=self.max_data_points)
+        self.raw_data = deque(maxlen=32767)
         self.eeg_powers = {
             "Delta": deque(maxlen=self.max_data_points), 
             "Theta": deque(maxlen=self.max_data_points), 
@@ -120,10 +120,6 @@ class SerialApp:
         file_menu.add_command(label="导出数据", command=self.export_data)
         file_menu.add_command(label="退出", command=self.root.quit)
 
-        edit_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="编辑", menu=edit_menu)
-        edit_menu.add_command(label="清空输出", command=self.clear_output)
-
     def create_status_bar(self):
         self.status_bar = ttk.Label(self.root, text="就绪", relief=tk.SUNKEN, anchor=tk.W)
         self.status_bar.pack(side=tk.BOTTOM, fill=tk.X)
@@ -153,6 +149,7 @@ class SerialApp:
 
         self.fig.tight_layout()   
 
+    #获取可用串口
     def get_serial_ports(self):
         return [port.device for port in serial.tools.list_ports.comports()]
     # 打开串口
@@ -184,23 +181,12 @@ class SerialApp:
         except ValueError:
             messagebox.showerror("错误", "请输入有效的波特率数字")
 
-    # 清空输出窗口
-    def clear_output(self):
-        self.text_output.delete(1.0, tk.END)
-
-    # 保存输出到txt文件
-    def save_to_file(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text files", "*.txt")])
-        if file_path:
-            with open(file_path, "w") as f:
-                f.write(self.text_output.get(1.0, tk.END))
-            messagebox.showinfo("保存成功", f"数据已保存到 {file_path}")
-
     # 校验和计算
     def calculate_checksum(self, data):
         checksum = (0x80 + 0x02 + data[5] + data[6]) & 0xFFFFFFFF
         return (~checksum) & 0xFF  # 取反并取低8位
 
+    # 解析小包
     def parse_small_packet(self, packet):
         rawdata = (packet[5] << 8) | packet[6]
         if rawdata > 32768:
@@ -208,6 +194,7 @@ class SerialApp:
         self.raw_data.append(rawdata)
         self.update_data_display("原始数据", str(rawdata))
 
+    # 解析大包
     def parse_large_packet(self, packet):
         eeg_power_labels = list(self.eeg_powers.keys())
         for i, label in enumerate(eeg_power_labels):
@@ -220,6 +207,7 @@ class SerialApp:
         self.attention.append(attention_value)
         self.meditation.append(meditation_value)
         
+    #更新数据显示
     def update_data_display(self, data_type, value):
         if data_type in self.data_frames:
             self.data_frames[data_type].insert(tk.END, value + "\n")
@@ -286,6 +274,7 @@ class SerialApp:
 
         self.canvas.draw_idle()
 
+    #导出数据
     def export_data(self):
         file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
         if file_path:
