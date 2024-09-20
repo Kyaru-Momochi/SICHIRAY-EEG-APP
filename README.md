@@ -2,9 +2,6 @@
 
 ## 本项目旨在针对思知瑞脑波套件的数据读取和导出
 
-先附上套件官方的教程
-（https://sichiray-tech.yuque.com/dm0eyv/qkkes1/frrm8p）
-
 ![image-20240919145228558](https://github.com/user-attachments/assets/791bcd84-cdd9-43db-bd89-b7db0dddd6a2)
 
 
