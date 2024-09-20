@@ -2,6 +2,9 @@
 
 ## 本项目旨在针对思知瑞脑波套件的数据读取和导出
 
+先附上套件官方的教程
+（https://sichiray-tech.yuque.com/dm0eyv/qkkes1/frrm8p）
+
 ![image-20240919145228558](https://github.com/user-attachments/assets/791bcd84-cdd9-43db-bd89-b7db0dddd6a2)
 
 
@@ -43,3 +46,7 @@
 ### 5、注意事项
 
 不要随意更改窗口大小，过大的窗口会导致极其卡顿（绘图导致的，待解决）
+
+#### 6、碎碎念
+
+由于python性能问题后续看情况可以换成别的语言-_-
